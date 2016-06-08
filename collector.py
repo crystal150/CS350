@@ -231,7 +231,7 @@ def operate ():
                                                 collected_text[j] = collected_text[j].split("?")[0]
                                                 collected_text[j] = collected_text[j].split("!")[0]
                                 collected_text = [t.replace("\n", "\\n") for t in collected_text]
-                                print (collected_text)
+                                #print (collected_text)
 
                                 evaluated_text = evalTexts (collected_text, datetime_str = datetime_str, eval_default = config_eval_default[i])
                         
