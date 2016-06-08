@@ -125,20 +125,6 @@ def learn(train_sen, train_label, vector_add = False):
 	return model, vtzers
 ###########################################
 
-################ Test Part ################
-
-def testLModel(test_sen, model, vtzers):
-	test_sen = normalize(test_sen)
-	lst = list()
-	for vtzer in vtzers:
-		lst.append (vtzer.transform (test_sen))
-
-	X_test = hstack(lst)
-	pred = model.predict_proba(X_test) 
-	
-	return pred[0][1]
-###########################################
-
 ################ Main Part ################
 
 if __name__ == "__main__":
@@ -150,8 +136,8 @@ if __name__ == "__main__":
 	print("============================== Insult Comment Training ==============================");
 	model, vtzers = learn(train_sen, train_label)
 
-	model_file = open('model.txt', 'wb')
-	vtzers_file = open('vtzers.txt', 'wb')
+	model_file = open('model.pickle', 'wb')
+	vtzers_file = open('vtzers.pickle', 'wb')
 	pickle.dump(model, model_file)
 	pickle.dump(vtzers, vtzers_file)
 
