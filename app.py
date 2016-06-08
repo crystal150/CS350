@@ -10,6 +10,7 @@ from nltk import word_tokenize
 from sklearn import linear_model
 from sklearn.feature_extraction.text import TfidfVectorizer
 from scipy.sparse import hstack
+import sys
 
 # Natural language normalizing
 def normalize(f, stemmer = None):
@@ -93,6 +94,8 @@ def test(test_sen):
 	return str(ret * 100)[:4] + '%'
 
 if __name__ == "__main__" :
+	reload(sys)
+	sys.setdefaultencoding('utf8')
 	model_file = open('model.txt', 'r')
 	vtzers_file = open('vtzers.txt', 'r')
 	global modela
