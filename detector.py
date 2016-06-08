@@ -10,6 +10,7 @@ from nltk import word_tokenize
 from sklearn import linear_model
 from sklearn.feature_extraction.text import TfidfVectorizer
 from scipy.sparse import hstack
+import sys
 
 # Natural language normalizing
 def normalize(f, stemmer = None):
@@ -101,5 +102,18 @@ def test(test_sen):
 	
 	return str(ret * 100)[:4] + '%'
 
+<<<<<<< HEAD:detector.py
 app.run(host='0.0.0.0', port=5000, debug=False)
+=======
+if __name__ == "__main__" :
+	reload(sys)
+	sys.setdefaultencoding('utf8')
+	model_file = open('model.txt', 'r')
+	vtzers_file = open('vtzers.txt', 'r')
+	global modela
+	global vtzersa
+	modela = load(model_file)
+	vtzersa = load(vtzers_file)
+	app.run(host='0.0.0.0', port=5000, debug=True)
+>>>>>>> 140106cab8068df4fd06015a26eede084962264e:app.py
 
