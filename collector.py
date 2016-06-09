@@ -55,10 +55,11 @@ def writeCsv(fname, text, delimiter = ","):
                 return -1
 
 def webCrawl (url, tag = "", tag_attr_type = "", tag_attr_val = ""):
+        if (url == None or tag == None or tag_attr_type == None or tag_attr_val == None):
+                return []
         page = 1
         source_code = requests.get(url)
         plain_text = source_code.text
-        parsePage (plain_text)
         parsed_text = BeautifulSoup(plain_text, "html.parser")
         comment_text = parsed_text.find_all(tag, attrs={tag_attr_type:tag_attr_val})
         
@@ -99,7 +100,7 @@ def evalTexts (text, datetime_str = "", react_pos = list(), react_neg = list(),
         result_list = list()
         for i in range(0, len(text)):
                 current_list = list()
-                if (i >= len(react_pos) or i >= len(react_neg)):
+                if (i >= len(react_pos) or i >= len(react_neg) or (min_react_rate < 0 and min_react_num < 0)):
                         if (eval_default == 1):
                                 current_list.append("1")
                         elif (eval_default == 0):
@@ -123,7 +124,7 @@ def operate ():
         trial_limit = 1
         trial_cur = 0
 
-        config_txt = open(".collector.conf", 'r')
+        config_txt = open("crawler-config.txt", 'r')
         config_lines = list()
         config_pages = list()
         while True:
@@ -157,7 +158,18 @@ def operate ():
                                 config_tags = [None] * config_pages_num
                                 config_tags_at = [None] * config_pages_num
                                 config_tags_av = [None] * config_pages_num
-                                config_eval_default = [None] * config_pages_num
+                                config_pos_react_tags = [None] * config_pages_num
+                                config_pos_react_tags_at = [None] * config_pages_num
+                                config_pos_react_tags_av = [None] * config_pages_num
+                                config_neg_react_tags = [None] * config_pages_num
+                                config_neg_react_tags_at = [None] * config_pages_num
+                                config_neg_react_tags_av = [None] * config_pages_num
+                                config_eval_neg_rate = [-1] * config_pages_num
+                                config_eval_neg_num = [-1] * config_pages_num
+                                config_eval_default = [False] * config_pages_num
+                                config_exclude_str = [[]] * config_pages_num
+                                config_trim_start_str = [[]] * config_pages_num
+                                config_trim_end_str = [[]] * config_pages_num
                         if (config_line_variable == "pages"):
                                 config_pages[config_line_p_int[0]] = config_line_define[1]
                         if (config_line_variable == "timeinterval"):
@@ -170,10 +182,53 @@ def operate ():
                                 config_tags_at[config_line_p_int[0]] = config_line_define[1]
                         if (config_line_variable == "tag_attr_val"):
                                 config_tags_av[config_line_p_int[0]] = config_line_define[1]
+                        if (config_line_variable == "pos_react_tag"):
+                                config_pos_react_tags[config_line_p_int[0]] = config_line_define[1]
+                        if (config_line_variable == "pos_react_tag_attr_type"):
+                                config_pos_tags_at[config_line_p_int[0]] = config_line_define[1]
+                        if (config_line_variable == "pos_react_tag_attr_val"):
+                                config_pos_tags_av[config_line_p_int[0]] = config_line_define[1]
+                        if (config_line_variable == "neg_react_tag"):
+                                config_neg_react_tags[config_line_p_int[0]] = config_line_define[1]
+                        if (config_line_variable == "neg_react_tag_attr_type"):
+                                config_neg_tags_at[config_line_p_int[0]] = config_line_define[1]
+                        if (config_line_variable == "neg_react_tag_attr_val"):
+                                config_neg_tags_av[config_line_p_int[0]] = config_line_define[1]
+                        if (config_line_variable == "eval_neg_rate"):
+                                config_eval_neg_rate[config_line_p_int[0]] = float(config_line_define[1])
+                        if (config_line_variable == "eval_neg_rate"):
+                                config_eval_neg_num[config_line_p_int[0]] = int(config_line_define[1])
                         if (config_line_variable == "eval_default"):
                                 config_eval_default[config_line_p_int[0]] = int(config_line_define[1])
+                        if (config_line_variable == "exclude_str"):
+                                config_exclude_str[config_line_p_int[0]] = config_line_define[1].split(",")
+                                #print (config_exclude_str[config_line_p_int[0]])
+                        if (config_line_variable == "trim_start_str"):
+                                config_trim_start_str[config_line_p_int[0]] = config_line_define[1].split(",")
+                                #print (config_trim_start_str[config_line_p_int[0]])
+                        if (config_line_variable == "trim_end_str"):
+                                config_trim_end_str[config_line_p_int[0]] = config_line_define[1].split(",")
+                                #print (config_trim_end_str[config_line_p_int[0]])
+                                
                      
         config_txt.close()
+
+        for i in range (0, len(config_pages)):
+                for j in range(0, len(config_exclude_str[i])):
+                        config_exclude_str[i][j] = config_exclude_str[i][j].replace("\\n", "\n")
+                        config_exclude_str[i][j] = config_exclude_str[i][j].replace("\\t", "\t")
+                        config_exclude_str[i][j] = config_exclude_str[i][j].replace("\\b", "\b")
+                        config_exclude_str[i][j] = config_exclude_str[i][j].replace("\\\\", "\\")
+                for j in range(0, len(config_trim_start_str[i])):
+                        config_trim_start_str[i][j] = config_trim_start_str[i][j].replace("\\n", "\n")
+                        config_trim_start_str[i][j] = config_trim_start_str[i][j].replace("\\t", "\t")
+                        config_trim_start_str[i][j] = config_trim_start_str[i][j].replace("\\b", "\b")
+                        config_trim_start_str[i][j] = config_trim_start_str[i][j].replace("\\\\", "\\")
+                for j in range(0, len(config_trim_end_str[i])):
+                        config_trim_end_str[i][j] = config_trim_end_str[i][j].replace("\\n", "\n")
+                        config_trim_end_str[i][j] = config_trim_end_str[i][j].replace("\\t", "\t")
+                        config_trim_end_str[i][j] = config_trim_end_str[i][j].replace("\\b", "\b")
+                        config_trim_end_str[i][j] = config_trim_end_str[i][j].replace("\\\\", "\\")
 
         #print ("pages : ")
         #print (config_pages)
@@ -216,24 +271,36 @@ def operate ():
                                 collected_text = webCrawl(url = config_pages[i], tag = config_tags[i],
                                                           tag_attr_type = config_tags_at[i],
                                                           tag_attr_val = config_tags_av[i])
-                               
-                                if (config_pages[i] == 'http://www.gotlines.com/insults/'):
-                                        collected_text = collected_text[2:]
-                                        #collected_text = collected_text.replace("\n", "\\n")
-                                        
-                                        for t in collected_text:
-                                                if (t.find("\n") != -1):
-                                                        collected_text.remove(t)
-                                        
-                                        for j in range(0, len(collected_text)):
+                                collected_pos_reacts = webCrawl(url = config_pages[i], tag = config_pos_react_tags[i],
+                                                                tag_attr_type = config_pos_react_tags_at[i],
+                                                                tag_attr_val = config_pos_react_tags_av[i])
+                                collected_neg_reacts = webCrawl(url = config_pages[i], tag = config_neg_react_tags[i],
+                                                                tag_attr_type = config_neg_react_tags_at[i],
+                                                                tag_attr_val = config_neg_react_tags_av[i])
+                                for j in range(0, len(collected_text)):
                                                 collected_text[j] = collected_text[j].replace("\x92", "\'")
-                                                collected_text[j] = collected_text[j].split(".")[0]
-                                                collected_text[j] = collected_text[j].split("?")[0]
-                                                collected_text[j] = collected_text[j].split("!")[0]
-                                collected_text = [t.replace("\n", "\\n") for t in collected_text]
-                                #print (collected_text)
 
-                                evaluated_text = evalTexts (collected_text, datetime_str = datetime_str, eval_default = config_eval_default[i])
+                                for t in collected_text:
+                                        for s in config_exclude_str[i]:
+                                                collected_text.remove(t)
+                                for j in range(0, len(collected_text)):
+                                        for s in config_trim_start_str[i]:
+                                                collected_text[j] = collected_text[j].split(s)[-1]
+                                for j in range(0, len(collected_text)):
+                                        for s in config_trim_end_str[i]:
+                                                collected_text[j] = collected_text[j].split(s)[0]
+
+                                for t in collected_text:
+                                        if (t == ""):
+                                                collected_text.remove("")
+                                #print(collected_text)
+
+                                evaluated_text = evalTexts (collected_text, datetime_str = datetime_str,
+                                                            react_pos = collected_pos_reacts,
+                                                            react_neg = collected_neg_reacts,
+                                                            min_react_rate = config_eval_neg_rate[i],
+                                                            min_react_num = config_eval_neg_num[i],
+                                                            eval_default = config_eval_default[i])
                         
                                         
                         evaluated_text_result = evaluated_text_result + evaluated_text
@@ -253,32 +320,10 @@ def operate ():
                                 time_tick = time_cur - time_prev
                                 time_prev = time_cur
                                 time_elapsed = time_elapsed + time_tick
-                        
-                
                 
         time_end = time.clock()
+
         print ("Crawling Ended")
 
-
-def parsePage (raw_page):
-        cur_index = 0
-        prev_index = -1
-        while (cur_index > prev_index):
-                prev_index = cur_index
-                tag_open = raw_page.find("<", cur_index)
-                tag_close = raw_page.find(">", cur_index)
-                if (tag_open > 0 and tag_close > 0):
-                        cur_substring = raw_page[tag_open + 1:tag_close]
-                        tag_type_end = cur_substring.find(" ")
-                        if (tag_type_end == -1):
-                                tag_type = cur_substring
-                                tag_attr = ""
-                        else:
-                                tag_type = cur_substring[:tag_type_end]
-                                tag_attr = cur_substring[tag_type_end + 1:]
-                        #print(tag_type)
-                cur_index = tag_close + 1
-        
-        return cur_index
-
 operate()
+
